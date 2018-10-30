@@ -1,0 +1,9 @@
+ 
+- hosts: localhost
+  tasks:
+    - name: Write env_infos file in /etc folder
+      copy:
+        content: |
+          node_role: {{ node_type }}
+          env: {{ env }}
+        dest: /etc/env_infos
