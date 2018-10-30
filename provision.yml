@@ -1,4 +1,7 @@
- 
+# Explicit gather_facts is not required but we made it to populate hostvars at startup
+- hosts: all
+  gather_facts: True
+  
 - hosts: localhost
   tasks:
     - name: Write env_infos file in /etc folder
@@ -6,6 +9,7 @@
         content: |
           node_role: {{ node_type }}
           env: {{ env }}
+          my_secret: {{ vault_example_secret }}
         dest: /etc/env_infos
 
 # In fact, if ansible-pull is runned with an inventory that contains remote VMs group : 

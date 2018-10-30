@@ -14,6 +14,11 @@ packages:
   - ansible
   - git
 write_files:
+  - path: /etc/ansible-pull/.secret
+    owner: root:root
+    permissions: '0600'
+    content: |
+      ${secret}
   - path: /etc/ansible-pull/inventory
     owner: root:root
     permissions: '0600'
@@ -27,7 +32,7 @@ write_files:
     owner: root:root
     permissions: '0744'
     content: |
-        ansible-pull provision.yml --url ${git_repository} --checkout step2 --accept-host-key -i /etc/ansible-pull/inventory -e node_type=${node_type} -e env=${env}
+        ansible-pull provision.yml --url ${git_repository} --checkout step3 --accept-host-key -i /etc/ansible-pull/inventory -e node_type=${node_type} -e env=${env} --vault-password-file=/etc/ansible-pull/.secret
 runcmd:
   # do not create this file in write_files part since /etc/cron.d does not yet exists
   - [ sh, -c, "echo '*/30 * * * * root /etc/ansible-pull/cron.sh > /var/log/ansible-pull.log 2>&1' > /etc/cron.d/ansible_pull_cronjob"]

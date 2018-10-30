@@ -80,6 +80,7 @@ data "template_file" "script-web" {
     node_type = "web"
     env = "${var.env}"
     git_repository = "${var.git_repository}"
+    secret = "${var.web_role_secret}"
   }
 }
 
@@ -90,6 +91,7 @@ data "template_file" "script-db" {
     node_type = "db"
     env = "${var.env}"
     git_repository = "${var.git_repository}"
+    secret = "${var.db_role_secret}"
   }
 }
 
