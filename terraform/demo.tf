@@ -83,6 +83,16 @@ data "template_file" "script-web" {
   }
 }
 
+data "template_file" "script-db" {
+  template = "${file("${path.module}/user_data.tpl")}"
+
+  vars {
+    node_type = "db"
+    env = "${var.env}"
+    git_repository = "${var.git_repository}"
+  }
+}
+
 resource "aws_instance" "puller-web" {
   ami           = "ami-4d46d534"
   instance_type = "t2.micro"
@@ -103,6 +113,51 @@ resource "aws_instance" "puller-web" {
   }
 }
 
+resource "aws_instance" "puller-db" {
+  ami           = "ami-4d46d534"
+  instance_type = "t2.micro"
+  key_name = "${var.aws_keypair}"
+
+  vpc_security_group_ids = ["${aws_security_group.ansible-pull-demo-almost-openbar.id}"]
+  associate_public_ip_address = true
+  source_dest_check = false
+  user_data = "${data.template_file.script-db.rendered}"
+      
+
+  subnet_id = "${aws_subnet.main.id}"
+
+  tags {
+    Trigramme = "${var.aws_trigram}"
+    Topic = "ansiblepulldemo"
+    Name = "puller-db"
+  }
+}
+
+resource "aws_instance" "remotevm" {
+  ami           = "ami-4d46d534"
+  instance_type = "t2.micro"
+  key_name = "${var.aws_keypair}"
+
+  vpc_security_group_ids = ["${aws_security_group.ansible-pull-demo-almost-openbar.id}"]
+  associate_public_ip_address = true
+  source_dest_check = false     
+
+  subnet_id = "${aws_subnet.main.id}"
+
+  tags {
+    Trigramme = "${var.aws_trigram}"
+    Topic = "ansiblepulldemo"
+    Name = "remotevm"
+  }
+}
+
 output "puller-web" {
     value = "${aws_instance.puller-web.public_dns}"
+}
+output "puller-db" {
+    value = "${aws_instance.puller-db.public_dns}"
+}
+
+output "remotevm" {
+    value = "${aws_instance.remotevm.public_dns}"
 }

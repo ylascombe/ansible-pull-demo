@@ -7,3 +7,43 @@
           node_role: {{ node_type }}
           env: {{ env }}
         dest: /etc/env_infos
+
+# In fact, if ansible-pull is runned with an inventory that contains remote VMs group : 
+# without specify ansible_connection=ssh for these VMs, the default mode is local : so all tasks will be applied on machine that 
+# run ansible-pull and not the remote one.
+# Exemple inventory
+# 
+# [remote_vms]
+# 10.20.30.40    ansible_connection=ssh        ansible_user=ubuntu
+# 
+# [remote_without_ssh_cnx]
+# 10.20.30.41
+#
+# Actual behavior : 
+# - file /tmp/test-file-10.20.30.40.txt will be created on host 10.20.30.40
+# - file /tmp/test-file-10.20.30.41.txt will be created on localhost
+#
+- hosts: remote_vms remote_without_ssh_cnx
+  tasks:
+    - name: Write test-file.txt in /tmp folder
+      copy:
+        content: "file content for instance {{ ansible_hostname }}"
+        dest: /tmp/test-file-{{ ansible_hostname }}.txt
+
+# Test delegate_to
+- hosts: remote_vms[0]
+  tasks:
+    - name: Create a test file with a delegate_to localhost
+      delegate_to: localhost
+      copy:
+        content: "file content generated with delegate_to localhost"
+        dest: /tmp/test-file-delegate-to.txt
+
+# Not functional if we not specify to ansible how to manage connection
+# - hosts: localhost
+#   tasks:
+#     - name: Create a test file with a delegate_to remote_vms[0]
+#       delegate_to: remote_vms[0]
+#       copy:
+#         content: "file content generated with delegate_to remote_vms[0]"
+#         dest: /tmp/test-file-delegate-to.txt
